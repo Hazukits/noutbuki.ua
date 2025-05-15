@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Legion Pro 5i Gen 10 - Маркет Електроніки</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0; padding: 0;
+    }
+    header {
+      background: #007bff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .form-container, .product-container, .users-container {
+      max-width: 400px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .product-container img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .product-container h2 {
+      margin-top: 0;
+    }
+    .product-description {
+      font-size: 16px;
+      margin: 10px 0;
+      color: #333;
+    }
+    .btn-small {
+      width: auto;
+      padding: 8px 12px;
+      margin-right: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+    }
+    .order-btn {
+      background: #28a745;
+    }
+    .share-btn {
+      background: #17a2b8;
+    }
+    .users-container h3 {
+      margin-top: 0;
+      text-align: center;
+      color: #444;
+    }
+    .user-list {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    .logout-btn {
+      background: #dc3545;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Маркет Електроніки</h1>
+</header>
+
+<div class="form-container" id="registerLogin">
+  <h2>Реєстрація / Вхід</h2>
+  <input type="email" id="email" placeholder="Введіть електронну пошту" required />
+  <input type="password" id="password" placeholder="Введіть пароль (мінімум 8 символів)" required />
+  <button onclick="registerOrLogin()">Зареєструватися / Увійти</button>
+</div>
+
+<div class="product-container" id="productSection" style="display:none;">
+  <h2>Lenovo Legion Pro 5i Gen 10</h2>
+  <img src="https://images.unsplash.com/photo-1625779830636-137d858f7c58?auto=format&fit=crop&w=800&q=80" alt="Lenovo Legion Pro 5i Gen 10" />
+  <p class="product-description">
+    Потужний ігровий ноутбук з процесором Intel Core i7 10-го покоління, 16 ГБ ОЗП, відеокартою NVIDIA RTX 3060,
+    512 ГБ SSD, 15.6" Full HD дисплеєм з частотою оновлення 165 Гц.
+  </p>
+  <button class="btn-small order-btn" onclick="orderProduct()">Замовити</button>
+  <button class="btn-small share-btn" onclick="shareProduct()">Поділитись</button>
+  <button class="btn-small logout-btn" onclick="logout()">Вийти</button>
+</div>
+
+<div class="users-container" id="usersSection" style="display:none;">
+  <h3>Зареєстровані користувачі (Email : Пароль)</h3>
+  <div class="user-list" id="userList"></div>
+</div>
+
+<script>
+  function registerOrLogin() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!email.includes('@') || !email.includes('.')) {
+      alert('Введіть коректну електронну пошту.');
+      return;
+    }
+    if (password.length < 8) {
+      alert('Пароль повинен містити мінімум 8 символів.');
+      return;
+    }
+
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    const userIndex = users.findIndex(u => u.email === email);
+
+    if (userIndex === -1) {
+      // Реєстрація нового користувача
+      users.push({ email, password });
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('Ви успішно зареєструвались!');
+      loginUser(email);
+    } else {
+      // Вхід
+      if (users[userIndex].password === password) {
+        alert('Вхід успішний!');
+        loginUser(email);
+      } else {
+        alert('Неправильний пароль.');
+        return;
+      }
+    }
+  }
+
+  function loginUser(email) {
+    localStorage.setItem('currentUser', email);
+    document.getElementById('registerLogin').style.display = 'none';
+    document.getElementById('productSection').style.display = 'block';
+    document.getElementById('usersSection').style.display = 'block';
+    renderUserList();
+  }
+
+  function logout() {
+    localStorage.removeItem('currentUser');
+    document.getElementById('registerLogin').style.display = 'block';
+    document.getElementById('productSection').style.display = 'none';
+    document.getElementById('usersSection').style.display = 'none';
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+  }
+
+  function renderUserList() {
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const userListDiv = document.getElementById('userList');
+    userListDiv.innerHTML = '';
+    users.forEach(user => {
+      const userLine = document.createElement('div');
+      userLine.textContent = `${user.email} : ${user.password}`;
+      userListDiv.appendChild(userLine);
+    });
+  }
+
+  function orderProduct() {
+    alert('Дякуємо за замовлення Lenovo Legion Pro 5i Gen 10!');
+  }
+
+  function shareProduct() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(`Переглянь цей товар: Lenovo Legion Pro 5i Gen 10\n${url}`).then(() => {
+      alert('Посилання скопійовано в буфер обміну!');
+    }).catch(() => {
+      alert('Не вдалося скопіювати посилання.');
+    });
+  }
+
+  // При завантаженні сторінки перевіряємо чи користувач вже залогінений
+  window.onload = function() {
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      loginUser(currentUser);
+    }
+  }
+</script>
+
+</body>
+</html>
